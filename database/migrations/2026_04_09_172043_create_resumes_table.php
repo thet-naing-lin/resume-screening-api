@@ -13,6 +13,12 @@ return new class extends Migration
     {
         Schema::create('resumes', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('job_description_id')->constrained('job_descriptions')->onDelete('cascade');
+            $table->string('filename');
+            $table->string('file_path');
+            $table->longText('raw_text')->nullable();
+            $table->json('parsed_data')->nullable();
+            $table->timestamp('uploaded_at')->useCurrent();
             $table->timestamps();
         });
     }
