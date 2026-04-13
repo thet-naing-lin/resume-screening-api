@@ -11,13 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('job_descriptions', function (Blueprint $table) {
+        Schema::create('interview_questions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
-            $table->string('title');
-            $table->text('required_skills');
-            $table->text('qualifications');
-            $table->string('experience_level');
+            $table->foreignId('candidate_id')->constrained('candidates')->onDelete('cascade');
+            $table->foreignId('job_description_id')->constrained('job_descriptions')->onDelete('cascade');
+            $table->text('question');
             $table->timestamps();
         });
     }
@@ -27,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('job_descriptions');
+        Schema::dropIfExists('interview_questions');
     }
 };
