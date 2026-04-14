@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
     protected $fillable = [
         'name',
@@ -42,15 +43,8 @@ class User extends Authenticatable
         return $this->hasMany(AuditLog::class);
     }
 
-    // Many-to-many with roles through user_roles
-    public function roles()
-    {
-        return $this->belongsToMany(Role::class, 'user_roles');
-    }
-
-    // Helper: check if user has a specific role
-    public function hasRole(string $role): bool
-    {
-        return $this->roles()->where('name', $role)->exists();
-    }
+    // DELETE these two methods below — Spatie handles both automatically:
+    //
+    // public function roles() { ... }   → Spatie provides this via HasRoles
+    // public function hasRole() { ... } → Spatie provides this via HasRoles
 }
