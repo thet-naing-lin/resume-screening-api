@@ -34,7 +34,7 @@ class JobDescriptionController extends Controller
             'required_skills'   => 'required|array|min:1',
             'required_skills.*' => 'string|max:50',
             'experience_level'  => 'required|in:junior,mid,senior',
-            'employment_type'   => 'required|in:full-time,part-time,contract,internship',
+            'employment_type'   => 'required|in:full-time,part-time,contract,internship,freelance',
             'location'          => 'nullable|string|max:255',
             'status'            => 'sometimes|in:active,closed',
         ]);
@@ -59,7 +59,7 @@ class JobDescriptionController extends Controller
             'required_skills'   => 'required|array|min:1',
             'required_skills.*' => 'string|max:50',
             'experience_level'  => 'required|in:junior,mid,senior',
-            'employment_type'   => 'required|in:full-time,part-time,contract,internship',
+            'employment_type'   => 'required|in:full-time,part-time,contract,internship,freelance',
             'location'          => 'nullable|string|max:255',
             'status'            => 'required|in:active,closed',
         ]);
