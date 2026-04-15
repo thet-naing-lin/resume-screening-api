@@ -12,6 +12,8 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
+    protected $guard_name = 'web';
+
     protected $fillable = [
         'name',
         'email',
@@ -34,7 +36,7 @@ class User extends Authenticatable
     // One user has many job descriptions
     public function jobDescriptions()
     {
-        return $this->hasMany(JobDescription::class, 'created_by');
+        return $this->hasMany(JobDescription::class, 'user_id');
     }
 
     // One user has many audit logs

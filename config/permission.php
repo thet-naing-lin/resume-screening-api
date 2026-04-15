@@ -198,5 +198,7 @@ return [
          */
 
         'store' => 'default',
+
+        // 'guard' => 'web', 
     ],
 ];
