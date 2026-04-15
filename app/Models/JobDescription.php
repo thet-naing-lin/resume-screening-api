@@ -14,7 +14,9 @@ class JobDescription extends Model
         'title',
         'description',
         'required_skills',
+        'required_qualification',
         'experience_level',
+        'experience_years',  
         'employment_type',
         'location',
         'status',
@@ -23,6 +25,7 @@ class JobDescription extends Model
     // Auto cast required_skills JSON to array
     protected $casts = [
         'required_skills' => 'array',
+        'experience_years' => 'integer',
     ];
 
     // Relationship — belongs to the user who created it
