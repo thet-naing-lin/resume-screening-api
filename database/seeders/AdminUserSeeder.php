@@ -20,6 +20,26 @@ class AdminUserSeeder extends Seeder
 
         $admin->assignRole('admin');
 
+        $xin = User::firstOrCreate(
+            ['email' => 'xin@gmail.com'],
+            [
+                'name'     => 'xin',
+                'password' => Hash::make('asdfasdf'),
+            ]
+        );
+
+        $xin->assignRole('admin');
+
+        $hr = User::firstOrCreate(
+            ['email' => 'hr@resumescreening.com'],
+            [
+                'name'     => 'HR User',
+                'password' => Hash::make('asdfasdf'),
+            ]
+        );
+
+        $hr->assignRole('hr');
+
         $this->command->info('Admin user created: admin@resumescreening.com / Admin@12345');
     }
 }

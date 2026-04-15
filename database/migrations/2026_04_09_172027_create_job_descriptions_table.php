@@ -6,25 +6,24 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('job_descriptions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // who created it
             $table->string('title');
-            $table->text('required_skills');
-            $table->text('qualifications');
-            $table->string('experience_level');
+            $table->text('description');
+            $table->json('required_skills'); // ["PHP", "Laravel", "MySQL"]
+            $table->text('required_qualification')->nullable();
+            $table->enum('experience_level', ['junior', 'mid', 'senior']);
+            $table->unsignedTinyInteger('experience_years')->nullable();
+            $table->enum('employment_type', ['full-time', 'part-time', 'contract', 'internship', 'freelance']);
+            $table->string('location')->nullable();
+            $table->enum('status', ['active', 'closed'])->default('active');
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('job_descriptions');
