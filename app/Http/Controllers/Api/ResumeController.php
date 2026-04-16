@@ -3,63 +3,53 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreResumeRequest;
+use App\Models\Resume;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class ResumeController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    public function store(StoreResumeRequest $request)
+    {
+        $file = $request->file('resume_file');
+
+        // Generate unique stored filename
+        $storedFilename = Str::uuid() . '.' . $file->getClientOriginalExtension();
+
+        // Store in private disk (not public)
+        // People can’t download the file directly by URL
+        // you can control access later via a controller.
+        $path = $file->storeAs('resumes', $storedFilename, 'private');
+
+        // store in DB
+        $resume = Resume::create([
+            'job_description_id' => $request->job_description_id,
+            'uploaded_by'        => auth()->id(),
+            'candidate_id'       => null,          // filled later after parsing
+            'original_filename'  => $file->getClientOriginalName(),
+            'stored_filename'    => $storedFilename,
+            'file_type'          => $file->getClientOriginalExtension(),
+            'file_size'          => $file->getSize(),
+            'status'             => 'uploaded',
+        ]);
+
+        // Dispatch background job for parsing (Sprint 2 next step)
+        // ProcessResumeJob::dispatch($resume);
+
+        return response()->json([
+            'message' => 'Resume uploaded successfully.',
+            'data'    => $resume,
+        ], 201);
+    }
+
     public function index()
     {
-        //
-    }
+        $resumes = Resume::with(['candidate', 'jobDescription', 'score', 'uploader'])
+            ->where('uploaded_by', auth()->id())
+            ->latest()
+            ->get();
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return response()->json(['data' => $resumes]);
     }
 }

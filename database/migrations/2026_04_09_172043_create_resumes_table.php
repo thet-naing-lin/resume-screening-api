@@ -6,26 +6,40 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('resumes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('job_description_id')->constrained('job_descriptions')->onDelete('cascade');
-            $table->string('filename');
-            $table->string('file_path');
-            $table->longText('raw_text')->nullable();
-            $table->json('parsed_data')->nullable();
-            $table->timestamp('uploaded_at')->useCurrent();
+
+            // Foreign keys
+            $table->foreignId('job_description_id')
+                ->constrained('job_descriptions')
+                ->onDelete('cascade');
+            $table->foreignId('uploaded_by')
+                ->constrained('users')
+                ->onDelete('cascade');
+            $table->foreignId('candidate_id')    // ← FK in resumes, not in candidates
+                ->nullable()
+                ->constrained('candidates')
+                ->onDelete('set null');
+
+            // File info
+            $table->string('original_filename');       // e.g. john_doe_cv.pdf
+            $table->string('stored_filename');         // e.g. resumes/uuid.pdf
+            $table->enum('file_type', ['pdf', 'docx']);
+            $table->unsignedBigInteger('file_size');
+
+            // Processing pipeline
+            $table->enum('status', ['uploaded','parsing','parsed','scoring','scored','failed'])
+                ->default('uploaded');
+            $table->text('raw_text')->nullable();       // extracted raw text
+            $table->json('parsed_data')->nullable();    // structured JSON from parser
+            $table->text('parse_error')->nullable();    // error message if failed
+
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('resumes');
