@@ -45,6 +45,11 @@ class User extends Authenticatable
         return $this->hasMany(AuditLog::class);
     }
 
+    public function resumes()
+    {
+        return $this->hasMany(Resume::class, 'uploaded_by');
+    }
+
     // DELETE these two methods below — Spatie handles both automatically:
     //
     // public function roles() { ... }   → Spatie provides this via HasRoles

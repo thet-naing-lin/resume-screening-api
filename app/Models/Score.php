@@ -10,7 +10,7 @@ class Score extends Model
     use HasFactory;
 
     protected $fillable = [
-        'candidate_id',
+        'resume_id',
         'job_description_id',
         'tfidf_score',
         'semantic_score',
@@ -26,15 +26,15 @@ class Score extends Model
         'final_score'    => 'float',
     ];
 
-    // Belongs to a candidate
-    public function candidate()
-    {
-        return $this->belongsTo(Candidate::class);
-    }
-
     // Belongs to a job description
     public function jobDescription()
     {
         return $this->belongsTo(JobDescription::class);
+    }
+
+    // Belongs to a resume
+    public function resume()
+    {
+        return $this->belongsTo(Resume::class);
     }
 }

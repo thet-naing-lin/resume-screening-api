@@ -11,27 +11,39 @@ class Resume extends Model
 
     protected $fillable = [
         'job_description_id',
-        'filename',
-        'file_path',
+        'uploaded_by',
+        'candidate_id',
+        'original_filename',
+        'stored_filename',
+        'file_type',
+        'file_size',
+        'status',
         'raw_text',
         'parsed_data',
-        'uploaded_at',
+        'parse_error',
     ];
 
     protected $casts = [
-        'parsed_data' => 'array',   // stored as JSON, accessed as PHP array
-        'uploaded_at' => 'datetime',
+        'parsed_data' => 'array',   // auto-decode JSON
     ];
 
-    // Belongs to a job description
+    public function candidate()
+    {
+        return $this->belongsTo(Candidate::class);
+    }
+
+    public function uploader()
+    {
+        return $this->belongsTo(User::class, 'uploaded_by');
+    }
+
     public function jobDescription()
     {
         return $this->belongsTo(JobDescription::class);
     }
 
-    // One resume belongs to one candidate
-    public function candidate()
+    public function score()
     {
-        return $this->hasOne(Candidate::class);
+        return $this->hasOne(Score::class);
     }
 }

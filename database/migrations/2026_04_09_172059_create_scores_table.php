@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('scores', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('candidate_id')->constrained('candidates')->onDelete('cascade');
+            $table->foreignId('resume_id')->constrained('resumes')->onDelete('cascade');
             $table->foreignId('job_description_id')->constrained('job_descriptions')->onDelete('cascade');
-            $table->float('tfidf_score')->default(0);
-            $table->float('semantic_score')->default(0);
-            $table->float('final_score')->default(0);
-            $table->string('status')->default('pending');
+            $table->decimal('tfidf_score', 5, 2)->nullable();
+            $table->decimal('semantic_score', 5, 2)->nullable();
+            $table->decimal('final_score', 5, 2)->nullable();
+            $table->enum('status', ['shortlisted', 'under_review', 'rejected'])->default('under_review');
             $table->timestamp('scored_at')->nullable();
             $table->timestamps();
         });

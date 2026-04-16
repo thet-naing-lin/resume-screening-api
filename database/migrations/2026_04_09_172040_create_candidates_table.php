@@ -13,12 +13,9 @@ return new class extends Migration
     {
         Schema::create('candidates', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('resume_id')->constrained('resumes')->onDelete('cascade');
-            $table->string('name');
-            $table->string('email');
+            $table->string('name')->nullable();
+            $table->string('email')->nullable()->unique();
             $table->string('phone')->nullable();
-            $table->json('extracted_skills')->nullable();
-            $table->integer('experience_years')->nullable();
             $table->timestamps();
         });
     }
