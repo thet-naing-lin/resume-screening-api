@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreResumeRequest;
+use App\Jobs\ProcessResumeJob;
 use App\Models\Resume;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
@@ -44,7 +45,8 @@ class ResumeController extends Controller
                     'status'             => 'uploaded',
                 ]);
 
-                // TODO: ProcessResumeJob::dispatch($resume);
+                // Dispatch the job to process the resume (dispatches to queue)
+                ProcessResumeJob::dispatch($resume);
 
                 $uploaded[] = [
                     'id'       => $resume->id,
