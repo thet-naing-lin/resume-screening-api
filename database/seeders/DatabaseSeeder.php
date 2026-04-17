@@ -11,7 +11,9 @@ class DatabaseSeeder extends Seeder
         // Order matters — roles must exist before users
         $this->call([
             RoleSeeder::class,
-            UserSeeder::class,
+            // UserSeeder::class,
+            AdminUserSeeder::class,
+            JobDescriptionSeeder::class,
         ]);
     }
 }

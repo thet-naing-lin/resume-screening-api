@@ -9,23 +9,26 @@ class RoleSeeder extends Seeder
 {
     public function run(): void
     {
-        $roles = [
-            [
-                'name'        => 'admin',
-                'description' => 'Full system access — manage users and roles',
-            ],
-            [
-                'name'        => 'hr',
-                'description' => 'HR recruiter — manage jobs, upload resumes, view candidates',
-            ],
-        ];
+        // $roles = [
+        //     [
+        //         'name'        => 'admin',
+        //         'description' => 'Full system access — manage users and roles',
+        //     ],
+        //     [
+        //         'name'        => 'hr',
+        //         'description' => 'HR recruiter — manage jobs, upload resumes, view candidates',
+        //     ],
+        // ];
 
-        foreach ($roles as $role) {
-            Role::firstOrCreate(
-                ['name' => $role['name']],
-                ['description' => $role['description']]
-            );
-        }
+        // foreach ($roles as $role) {
+        //     Role::firstOrCreate(
+        //         ['name' => $role['name']],
+        //         ['description' => $role['description']]
+        //     );
+        // }
+
+        Role::firstOrCreate(['name' => 'admin',        'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'HR', 'guard_name' => 'web']);
 
         $this->command->info('✅ Roles seeded successfully.');
     }

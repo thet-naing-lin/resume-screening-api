@@ -10,17 +10,28 @@ class JobDescription extends Model
     use HasFactory;
 
     protected $fillable = [
-        'created_by',
+        'user_id',
         'title',
+        'description',
         'required_skills',
-        'qualifications',
+        'required_qualification',
         'experience_level',
+        'experience_years',
+        'employment_type',
+        'location',
+        'status',
     ];
 
-    // Belongs to a user (HR who created it)
+    // Auto cast required_skills JSON to array
+    protected $casts = [
+        'required_skills' => 'array',
+        'experience_years' => 'integer',
+    ];
+
+    // Relationship — belongs to the user who created it
     public function creator()
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     // One job description has many resumes
