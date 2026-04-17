@@ -30,7 +30,7 @@ return new class extends Migration
             $table->unsignedBigInteger('file_size');
 
             // Processing pipeline
-            $table->enum('status', ['uploaded','parsing','parsed','scoring','scored','failed'])
+            $table->enum('status', ['uploaded', 'parsing', 'parsed', 'scoring', 'scored', 'failed'])
                 ->default('uploaded');
             $table->text('raw_text')->nullable();       // extracted raw text
             $table->json('parsed_data')->nullable();    // structured JSON from parser
