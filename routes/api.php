@@ -43,4 +43,5 @@ Route::middleware('auth:sanctum')->group(function () {
     // Resume Controller
     Route::post('/resumes', [ResumeController::class, 'store']);
     Route::get('/resumes',  [ResumeController::class, 'index']);
+    Route::delete('/resumes/{resume}', [ResumeController::class, 'destroy']);
 });
