@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    // config/services.php
+    'python_scorer' => [
+        'url' => env('PYTHON_SCORER_URL', 'http://127.0.0.1:5001'),
+    ],
+
 ];
