@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\Api\AiInsightController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CandidateRankingController;
 use App\Http\Controllers\Api\JobDescriptionController;
 use App\Http\Controllers\Api\ResumeController;
 use App\Http\Controllers\Api\UserManagementController;
@@ -44,4 +46,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/resumes', [ResumeController::class, 'store']);
     Route::get('/resumes',  [ResumeController::class, 'index']);
     Route::delete('/resumes/{resume}', [ResumeController::class, 'destroy']);
+
+    // US-014 + US-015: ranked list with filters
+    Route::get('/candidate-rankings', [CandidateRankingController::class, 'index']);
+    // update candidate status from ranking page
+    Route::patch('/candidate-rankings/{resumeId}/status', [CandidateRankingController::class, 'updateStatus']);
+
+    // US-016 + US-017: AI insights for a resume
+    Route::post('/resumes/{resumeId}/ai-insights', [AiInsightController::class, 'generate']);
+    Route::get('/resumes/{resumeId}/ai-insights',  [AiInsightController::class, 'show']);
 });

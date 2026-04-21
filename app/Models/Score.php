@@ -17,6 +17,8 @@ class Score extends Model
         'final_score',
         'status',
         'scored_at',
+        'ai_summary',
+        'questions_json',
     ];
 
     protected $casts = [
@@ -24,6 +26,7 @@ class Score extends Model
         'tfidf_score'    => 'float',
         'semantic_score' => 'float',
         'final_score'    => 'float',
+        'questions_json' => 'array',
     ];
 
     // Belongs to a job description

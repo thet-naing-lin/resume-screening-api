@@ -39,7 +39,7 @@ class Resume extends Model
 
     public function jobDescription()
     {
-        return $this->belongsTo(JobDescription::class);
+        return $this->belongsTo(JobDescription::class, 'job_description_id');
     }
 
     public function score()

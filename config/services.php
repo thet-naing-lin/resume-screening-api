@@ -35,4 +35,14 @@ return [
         ],
     ],
 
+    // config/services.php
+    'python_scorer' => [
+        'url' => env('PYTHON_SCORER_URL', 'http://127.0.0.1:5001'),
+    ],
+
+    'gemini' => [
+        'key' => env('GEMINI_API_KEY'),
+        'url' => env('GEMINI_API_URL'),
+    ],
+
 ];

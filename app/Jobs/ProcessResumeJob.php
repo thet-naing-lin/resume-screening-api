@@ -76,6 +76,10 @@ class ProcessResumeJob implements ShouldQueue
                 'parse_error' => null,
             ]);
 
+            // Kick off scoring pipeline
+            // ComputeResumeScoreJob::dispatch($resume)->delay(now()->addSeconds(2));
+            ComputeResumeScoreJob::dispatch($this->resume)->delay(now()->addSeconds(2));
+
             Log::info("Resume #{$this->resume->id} parsed successfully.");
         } catch (\Exception $e) {
             // ── ON FAILURE: Save error, mark as failed ───────────
