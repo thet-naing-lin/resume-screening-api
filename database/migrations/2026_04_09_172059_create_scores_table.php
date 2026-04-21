@@ -19,6 +19,8 @@ return new class extends Migration
             $table->decimal('semantic_score', 5, 2)->nullable();
             $table->decimal('final_score', 5, 2)->nullable();
             $table->enum('status', ['shortlisted', 'under_review', 'rejected'])->default('under_review');
+            $table->text('ai_summary')->nullable();
+            $table->json('questions_json')->nullable();
             $table->timestamp('scored_at')->nullable();
             $table->timestamps();
         });
