@@ -45,10 +45,4 @@ class JobDescription extends Model
     {
         return $this->hasMany(Score::class);
     }
-
-    // One job description has many interview questions
-    public function interviewQuestions()
-    {
-        return $this->hasMany(InterviewQuestion::class);
-    }
 }

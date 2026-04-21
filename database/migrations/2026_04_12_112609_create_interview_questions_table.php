@@ -13,8 +13,7 @@ return new class extends Migration
     {
         Schema::create('interview_questions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('candidate_id')->constrained('candidates')->onDelete('cascade');
-            $table->foreignId('job_description_id')->constrained('job_descriptions')->onDelete('cascade');
+            $table->foreignId('resume_id')->constrained('resumes')->onDelete('cascade');
             $table->text('question');
             $table->timestamps();
         });
