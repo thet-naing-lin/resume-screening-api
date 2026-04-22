@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Resume;
 use App\Models\Score;
+use App\Services\AuditLogger;
 use App\Services\GeminiService;
 use Illuminate\Http\Request;
 
@@ -46,6 +47,10 @@ class AiInsightController extends Controller
         Score::where('resume_id', $resumeId)->update([
             'ai_summary'     => $summary,
             'questions_json' => $questions,
+        ]);
+
+        AuditLogger::log('ai.insights_generated', $resume, [
+            'job_title' => $jobTitle,
         ]);
 
         return response()->json([

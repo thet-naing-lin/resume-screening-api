@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\JobDescription;
+use App\Services\AuditLogger;
 use Illuminate\Http\Request;
 
 class JobDescriptionController extends Controller
@@ -46,6 +47,8 @@ class JobDescriptionController extends Controller
             'user_id' => auth()->id(),
         ]);
 
+        AuditLogger::log('job.created', $job, ['title' => $job->title]);
+
         return response()->json([
             'message' => 'Job description created successfully.',
             'job'     => $this->formatJob($job),
@@ -70,6 +73,8 @@ class JobDescriptionController extends Controller
 
         $job->update($validated);
 
+        AuditLogger::log('job.updated', $job, ['title' => $job->title]);
+
         return response()->json([
             'message' => 'Job description updated successfully.',
             'job'     => $this->formatJob($job->fresh()),
@@ -81,6 +86,8 @@ class JobDescriptionController extends Controller
     {
         $title = $job->title;
         $job->delete();
+
+        AuditLogger::log('job.deleted', null, ['title' => $title]);
 
         return response()->json([
             'message' => "\"{$title}\" has been deleted.",

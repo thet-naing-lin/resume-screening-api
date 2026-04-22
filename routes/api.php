@@ -1,12 +1,14 @@
 <?php
 
-use App\Http\Controllers\Api\AiInsightController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CandidateRankingController;
 use App\Http\Controllers\Api\JobDescriptionController;
 use App\Http\Controllers\Api\ResumeController;
 use App\Http\Controllers\Api\UserManagementController;
+use App\Http\Controllers\Api\AiInsightController;
+use App\Http\Controllers\Api\AuditLogController;
+use App\Http\Controllers\Api\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,7 +35,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/users',                  [UserManagementController::class, 'index']);
         Route::patch('/users/{user}/role',    [UserManagementController::class, 'assignRole']);
         Route::delete('/users/{user}',        [UserManagementController::class, 'destroy']);
+
+        Route::get('/audit-logs', [AuditLogController::class, 'index']);
     });
+
+    // Dashboard stats
+    Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
 
     // Job Descriptions — full CRUD
     Route::get('/jobs',          [JobDescriptionController::class, 'index']);
@@ -47,7 +54,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/resumes',  [ResumeController::class, 'index']);
     Route::delete('/resumes/{resume}', [ResumeController::class, 'destroy']);
 
-    // US-014 + US-015: ranked list with filters
+    // US-014 + US-015 + US-018: ranked list with filters and export csv file
+    /// export must be before the index to avoid Laravel matching "export" as an {id} parameter
+    Route::get('/candidate-rankings/export', [CandidateRankingController::class, 'export']);
     Route::get('/candidate-rankings', [CandidateRankingController::class, 'index']);
     // update candidate status from ranking page
     Route::patch('/candidate-rankings/{resumeId}/status', [CandidateRankingController::class, 'updateStatus']);

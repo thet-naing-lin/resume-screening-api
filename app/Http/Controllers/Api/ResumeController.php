@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreResumeRequest;
 use App\Jobs\ProcessResumeJob;
 use App\Models\Resume;
+use App\Services\AuditLogger;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 
@@ -43,6 +44,11 @@ class ResumeController extends Controller
                     'file_type'          => $file->getClientOriginalExtension(),
                     'file_size'          => $file->getSize(),
                     'status'             => 'uploaded',
+                ]);
+
+                AuditLogger::log('resume.uploaded', $resume, [
+                    'filename' => $resume->original_filename,
+                    'job_id'   => $resume->job_description_id,
                 ]);
 
                 // Dispatch the job to process the resume (dispatches to queue)
@@ -95,6 +101,10 @@ class ResumeController extends Controller
 
         // 5. Delete the DB record (scores cascade automatically)
         $resume->delete();
+
+        AuditLogger::log('resume.deleted', null, [
+            'filename' => $filename,
+        ]);
 
         return response()->json([
             'message' => "\"{$filename}\" has been deleted.",
