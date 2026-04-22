@@ -13,11 +13,15 @@ return new class extends Migration
     {
         Schema::create('audit_logs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->string('action');
-            $table->string('entity');
-            $table->unsignedBigInteger('entity_id');
-            $table->timestamp('timestamp')->useCurrent();
+            $table->foreignId('user_id')
+                ->nullable()
+                ->constrained('users')
+                ->onDelete('set null');
+            $table->string('action');           // e.g. "resume.uploaded"
+            $table->string('target_type')->nullable(); // e.g. "Resume"
+            $table->unsignedBigInteger('target_id')->nullable(); // e.g. 5
+            $table->json('metadata')->nullable(); // extra context
+            $table->string('ip_address', 45)->nullable();
             $table->timestamps();
         });
     }

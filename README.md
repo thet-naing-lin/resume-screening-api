@@ -1,58 +1,164 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Resume Screening Tool — Backend
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Laravel REST API backend for the Automated Resume Screening Tool. Handles authentication, resume storage, job management, candidate ranking, AI insights, and audit logging.
 
-## About Laravel
+## Tech Stack
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Laravel 11**
+- **MySQL** database
+- **Laravel Sanctum** for API token authentication
+- **Spatie Laravel Permission** for role-based access control
+- **Symfony Process** for calling the Python NLP service
+- **Smalot PDF Parser** for PDF text extraction
+- **PHPOffice/PHPWord** for DOCX text extraction
+- **Google Gemini API** for AI summary and interview question generation
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Features
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- Token-based authentication (register, login, logout)
+- Role management: `admin`, `hr_recruiter`
+- Job description CRUD
+- Resume upload with file validation (PDF/DOCX, max 5MB)
+- Resume text extraction and candidate parsing
+- NLP scoring via Python microservice (TF-IDF + Semantic)
+- Candidate ranking with filters and pagination
+- Candidate status management (shortlist / reject / under review)
+- AI-generated candidate summaries and interview questions (Gemini)
+- CSV export of ranked candidates
+- Full audit logging of all user actions
+- Admin: user management, role assignment
 
-## Learning Laravel
+## Getting Started
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### Prerequisites
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- PHP 8.2+
+- Composer
+- MySQL 8+
+- Python 3.9+ (for NLP service)
+- Queue worker (database or Redis driver)
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+### Installation
 
 ```bash
-composer require laravel/boost --dev
+# Clone the repository
+git clone https://github.com/your-username/resume-screening-backend.git
+cd resume-screening-backend
 
-php artisan boost:install
+# Install PHP dependencies
+composer install
+
+# Copy environment file
+cp .env.example .env
+
+# Generate application key
+php artisan key:generate
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### Environment Variables
 
-## Contributing
+Update `.env` with your values:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```env
+APP_NAME="Resume Screening Tool"
+APP_URL=http://localhost:8000
 
-## Code of Conduct
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=resume_screening
+DB_USERNAME=root
+DB_PASSWORD=
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+QUEUE_CONNECTION=database
 
-## Security Vulnerabilities
+GEMINI_API_KEY=your_gemini_api_key_here
+GEMINI_API_URL=https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+PYTHON_SERVICE_URL=http://127.0.0.1:5001
+```
 
-## License
+### Database Setup
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+# Run migrations
+php artisan migrate
+
+# Seed initial data (admin user + sample jobs)
+php artisan db:seed
+```
+
+### Running the Server
+
+```bash
+# Start Laravel development server
+php artisan serve
+
+# Start queue worker (required for resume processing)
+ php artisan queue:work --timeout=120 --tries=3 --verbose
+```
+
+API runs at `http://localhost:8000`.
+
+## API Endpoints
+
+### Authentication
+
+| Method | Endpoint             | Description       |
+| ------ | -------------------- | ----------------- |
+| POST   | `/api/auth/register` | Register new user |
+| POST   | `/api/auth/login`    | Login             |
+| POST   | `/api/auth/logout`   | Logout            |
+
+### Jobs
+
+| Method | Endpoint         | Description               |
+| ------ | ---------------- | ------------------------- |
+| GET    | `/api/jobs`      | List all job descriptions |
+| POST   | `/api/jobs`      | Create job description    |
+| PUT    | `/api/jobs/{id}` | Update job description    |
+| DELETE | `/api/jobs/{id}` | Delete job description    |
+
+### Resumes
+
+| Method | Endpoint                        | Description              |
+| ------ | ------------------------------- | ------------------------ |
+| GET    | `/api/resumes`                  | List uploaded resumes    |
+| POST   | `/api/resumes`                  | Upload resume(s)         |
+| DELETE | `/api/resumes/{id}`             | Delete a resume          |
+| POST   | `/api/resumes/{id}/ai-insights` | Generate AI insights     |
+| GET    | `/api/resumes/{id}/ai-insights` | Get existing AI insights |
+
+### Rankings
+
+| Method | Endpoint                              | Description             |
+| ------ | ------------------------------------- | ----------------------- |
+| GET    | `/api/candidate-rankings/export`      | Export rankings as CSV  |
+| GET    | `/api/candidate-rankings`             | Get ranked candidates   |
+| PATCH  | `/api/candidate-rankings/{id}/status` | Update candidate status |
+
+### Admin
+
+| Method | Endpoint                     | Description     |
+| ------ | ---------------------------- | --------------- |
+| GET    | `/api/admin/users`           | List all users  |
+| PATCH  | `/api/admin/users/{id}/role` | Assign role     |
+| DELETE | `/api/admin/users/{id}`      | Delete user     |
+| GET    | `/api/admin/audit-logs`      | View audit logs |
+
+## Default Credentials (After Seeding)
+
+- #### Admin: admin@example.com / Admin@12345
+
+- #### HR Recruiter: hr@example.com / asdfasdf
+
+## Queue Jobs
+
+Resume processing runs as a background job:
+
+Upload → ProcessResumeJob dispatched
+→ Text extraction (PDF/DOCX)
+→ Candidate parsing (name, email, phone)
+→ Python NLP scoring (TF-IDF + Semantic)
+→ Score saved to database
+→ Status updated to "scored"

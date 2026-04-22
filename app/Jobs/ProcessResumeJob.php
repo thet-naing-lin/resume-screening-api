@@ -203,74 +203,31 @@ class ProcessResumeJob implements ShouldQueue
         ];
     }
 
-    private function extractEmail(string $text): ?string
-    {
-        preg_match('/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/', $text, $matches);
-        return $matches[0] ?? null;
-    }
-
     // private function extractEmail(string $text): ?string
     // {
-    //     // Normalize — remove markdown link artifacts like [email](mailto:email)
-    //     // PDF parsers sometimes produce these
-    //     $text = preg_replace('/\[([^\]]+)\]\(mailto:[^\)]+\)/', '$1', $text);
-
-    //     // Match all valid emails — standard regex
-    //     preg_match_all(
-    //         '/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/',
-    //         $text,
-    //         $matches
-    //     );
-
-    //     if (empty($matches[0])) {
-    //         return null;
-    //     }
-
-    //     foreach ($matches[0] as $email) {
-    //         $atPos     = strpos($email, '@');
-    //         $localPart = substr($email, 0, $atPos);
-    //         $domain    = substr($email, $atPos + 1);
-
-    //         // Walk the local part from right-to-left
-    //         // Real email usernames don't start with an uppercase letter
-    //         // when they're purely personal emails (gmail, yahoo, etc.)
-    //         // Find where lowercase-only part begins
-    //         $cleanLocal = $this->extractCleanLocal($localPart);
-
-    //         $candidate = strtolower($cleanLocal . '@' . $domain);
-
-    //         if (filter_var($candidate, FILTER_VALIDATE_EMAIL)) {
-    //             return $candidate;
-    //         }
-    //     }
-
-    //     return null;
+    //     preg_match('/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/', $text, $matches);
+    //     return $matches[0] ?? null;
     // }
 
-    // private function extractCleanLocal(string $localPart): string
-    // {
-    //     // Strategy: scan from left, find first position where the text
-    //     // transitions from "looks like a word/name" to "looks like an email username"
-    //     //
-    //     // Signs of a merged prefix:
-    //     // - Starts with uppercase followed by lowercase letters (proper noun = city/name)
-    //     // - Then continues with more lowercase + numbers (email pattern)
-    //     //
-    //     // Example: "Yangoncholwinthant5"
-    //     //           ^^^^^^ = proper noun prefix
-    //     //                 ^^^^^^^^^^^^^^ = actual email local part
+    private function extractEmail(string $text): ?string
+    {
+        // Strategy 1: Extract from mailto: links — most reliable source
+        // Handles: [anything](mailto:real@email.com)
+        // The mailto: part always has the true email, uncontaminated by surrounding text
+        if (preg_match('/mailto:([a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})/i', $text, $matches)) {
+            return strtolower($matches[1]);
+        }
 
-    //     // Pattern: one or more proper-noun-like words (Capital + lowercase)
-    //     // followed by the actual email username (starts with lowercase or digit)
-    //     if (preg_match('/^(?:[A-Z][a-z]+)+([a-z0-9][a-z0-9._%+\-]*)$/', $localPart, $m)) {
-    //         // $m[1] is the part after all the proper noun prefix(es)
-    //         if (strlen($m[1]) >= 4) {
-    //             return $m[1];
-    //         }
-    //     }
+        // Strategy 2: Plain email regex on cleaned text
+        // Strip markdown link wrappers first to avoid polluted display text
+        $cleaned = preg_replace('/\[([^\]]*)\]\([^\)]*\)/', ' ', $text);
 
-    //     return $localPart;
-    // }
+        if (preg_match('/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/', $cleaned, $matches)) {
+            return strtolower($matches[0]);
+        }
+
+        return null;
+    }
 
     private function extractPhone(string $string): ?string
     {
@@ -285,29 +242,118 @@ class ProcessResumeJob implements ShouldQueue
             : null;
     }
 
+    // private function extractName(string $text): ?string
+    // {
+    //     // Strategy: take the first non-empty line of the resume
+    //     // Most resumes put the candidate's name at the very top
+    //     $lines = explode("\n", trim($text));
+
+    //     foreach ($lines as $line) {
+    //         $line = trim($line);
+
+    //         // Skip empty, too short, or lines that look like emails/phones/URLs
+    //         if (
+    //             strlen($line) < 3 ||
+    //             strlen($line) > 60 ||
+    //             str_contains($line, '@') ||
+    //             str_contains($line, 'http') ||
+    //             preg_match('/\d{5,}/', $line)   // long number = not a name
+    //         ) {
+    //             continue;
+    //         }
+
+    //         // Only letters, spaces, dots, hyphens (a real name)
+    //         if (preg_match('/^[a-zA-Z\s.\-\']+$/', $line)) {
+    //             return $line;
+    //         }
+    //     }
+
+    //     return null;
+    // }
+
     private function extractName(string $text): ?string
     {
-        // Strategy: take the first non-empty line of the resume
-        // Most resumes put the candidate's name at the very top
+        // die("extractName IS running - line 1 is: [" . explode("\n", trim($text))[1] . "]");
+
+        $sectionHeaders = [
+            'accomplishments',
+            'experience',
+            'education',
+            'skills',
+            'summary',
+            'objective',
+            'profile',
+            'references',
+            'certifications',
+            'awards',
+            'projects',
+            'languages',
+            'interests',
+            'contact',
+            'expertise',
+            'proficiencies',
+            'links',
+            'portfolio',
+            'linkedin',
+        ];
+
         $lines = explode("\n", trim($text));
 
         foreach ($lines as $line) {
+            // Normalize — remove ALL unicode non-breaking spaces and weird whitespace
+            $line = preg_replace('/[\x00-\x1F\x7F\xA0]/u', ' ', $line);
             $line = trim($line);
 
-            // Skip empty, too short, or lines that look like emails/phones/URLs
-            if (
-                strlen($line) < 3 ||
-                strlen($line) > 60 ||
-                str_contains($line, '@') ||
-                str_contains($line, 'http') ||
-                preg_match('/\d{5,}/', $line)   // long number = not a name
-            ) {
-                continue;
-            }
+            if (strlen($line) < 2) continue;
 
-            // Only letters, spaces, dots, hyphens (a real name)
+            // Strip markdown links [text](url)
+            $line = preg_replace('/\[([^\]]*)\]\([^\)]*\)/u', '$1', $line);
+
+            // Strip bare URLs
+            $line = preg_replace('/https?:\/\/\S+/u', '', $line);
+
+            // Strip "Page N"
+            $line = preg_replace('/\bPage\s+\d+\b/iu', '', $line);
+
+            // Strip everything inside parentheses
+            $line = preg_replace('/\s*\([^)]*\)\s*/u', ' ', $line);
+
+            // Strip emails
+            $line = preg_replace('/\S+@\S+/u', '', $line);
+
+            // Strip phone numbers
+            $line = preg_replace('/[\+]?[\d][\d\s\-\(\)\.]{6,}/u', '', $line);
+
+            // Strip pipe | separators
+            $line = preg_replace('/\s*\|\s*/u', ' ', $line);
+
+            // Strip any remaining non-ASCII characters (catches hidden unicode)
+            $line = preg_replace('/[^\x20-\x7E]/u', '', $line);
+
+            // Clean multiple spaces
+            $line = trim(preg_replace('/\s{2,}/', ' ', $line));
+
+            if (strlen($line) < 3 || strlen($line) > 60) continue;
+
+            if (preg_match('/\d/', $line)) continue;
+
+            if (in_array(strtolower($line), $sectionHeaders)) continue;
+
+            $lower = strtolower($line);
+            if (
+                str_contains($lower, 'developer') ||
+                str_contains($lower, 'engineer') ||
+                str_contains($lower, 'manager') ||
+                str_contains($lower, 'designer') ||
+                str_contains($lower, 'analyst') ||
+                str_contains($lower, 'linkedin') ||
+                str_contains($lower, 'resume') ||
+                str_contains($lower, 'stack')    // catches "Full Stack" leftover
+            ) continue;
+
+            // Must be only ASCII letters and spaces
             if (preg_match('/^[a-zA-Z\s.\-\']+$/', $line)) {
-                return $line;
+                return trim($line);
             }
         }
 
@@ -510,7 +556,7 @@ class ProcessResumeJob implements ShouldQueue
             return null;
         }
 
-        $candidate = Candidate::firstOrCreate(
+        $candidate = Candidate::updateOrCreate(
             // Find by email (unique identifier)
             ['email' => $parsed['email']],
             // Only set these on CREATE — don't overwrite existing data

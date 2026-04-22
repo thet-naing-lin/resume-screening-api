@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\AuditLogger;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 
@@ -45,7 +46,15 @@ class UserManagementController extends Controller
             ], 403);
         }
 
+        $oldRole = $user->roles->first()?->name ?? 'no role'; // ← save before change
+
         $user->syncRoles([$request->role]);
+
+        // ── Audit log ──────────────────────────────────────────
+        AuditLogger::log('user.role_assigned', $user, [
+            'old_role' => $oldRole,
+            'new_role' => $request->role,
+        ]);
 
         return response()->json([
             'message' => "{$user->name}'s role updated to {$request->role}.",
@@ -66,6 +75,14 @@ class UserManagementController extends Controller
                 'message' => 'You cannot delete your own account.'
             ], 403);
         }
+
+        $userName  = $user->name;   // ← save before delete
+        $userEmail = $user->email;  // ← save before delete
+
+        AuditLogger::log('user.deleted', $user, [
+            'deleted_name'  => $userName,
+            'deleted_email' => $userEmail,
+        ]);
 
         $user->delete();
 

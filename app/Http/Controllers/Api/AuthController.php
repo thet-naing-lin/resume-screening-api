@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\AuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -41,6 +42,13 @@ class AuthController extends Controller
 
         // Create Sanctum token — this is what React will store and send
         $token = $user->createToken('auth_token')->plainTextToken;
+
+        // ── Audit log ──
+        AuditLogger::log('auth.register', $user, [
+            'email'      => $user->email,
+            'role'       => 'hr',
+            'registered_user_id' => $user->id, // ← explicit backup in metadata
+        ]);
 
         return response()->json([
             'message' => 'Registration successful.',
@@ -83,7 +91,10 @@ class AuthController extends Controller
         $token = $user->createToken('auth_token')->plainTextToken;
 
         // Log the login action
-        AuditLogService::log($user->id, 'login', 'User', $user->id);
+        AuditLogger::log('auth.login', $user, [
+            'email' => $user->email,
+            'login_user_id' => $user->id, // ← explicit backup in metadata
+        ]);
 
         return response()->json([
             'message' => 'Login successful.',
@@ -105,7 +116,10 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         // Log the logout action
-        AuditLogService::log($request->user()->id, 'logout', 'User', $request->user()->id);
+        AuditLogger::log('auth.logout', $request->user(), [
+            'email' => $request->user()->email,
+            'logout_user_id' => $request->user()->id, // ← explicit backup in metadata
+        ]);
 
         // Delete only the current token being used
         $request->user()->currentAccessToken()->delete();
