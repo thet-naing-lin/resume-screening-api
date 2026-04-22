@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class AuditLog extends Model
 {
@@ -12,16 +12,16 @@ class AuditLog extends Model
     protected $fillable = [
         'user_id',
         'action',
-        'entity',
-        'entity_id',
-        'timestamp',
+        'target_type',
+        'target_id',
+        'metadata',
+        'ip_address',
     ];
 
     protected $casts = [
-        'timestamp' => 'datetime',
+        'metadata' => 'array',
     ];
 
-    // Belongs to a user
     public function user()
     {
         return $this->belongsTo(User::class);
