@@ -137,6 +137,13 @@ class CandidateRankingController extends Controller
         $safeTitle = str_replace([' ', '/'], '_', strtolower($jobTitle));
         $filename = "rankings_{$safeTitle}_" . now()->format('Ymd_His') . ".csv";
 
+        AuditLogger::log('rankings.exported', null, [
+            'job_title'   => $jobTitle,
+            'filename'    => $filename,
+            'total_rows'  => $resumes->count(),
+            'status_filter' => $request->input('status', 'all'),
+        ]);
+
         // Stream the CSV response
         return response()->streamDownload(function () use ($resumes) {
 
