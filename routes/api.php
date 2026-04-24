@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\ResumeController;
 use App\Http\Controllers\Api\UserManagementController;
 use App\Http\Controllers\Api\AiInsightController;
 use App\Http\Controllers\Api\AuditLogController;
+use App\Http\Controllers\Api\CandidateMailController;
 use App\Http\Controllers\Api\DashboardController;
 
 /*
@@ -64,4 +65,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // US-016 + US-017: AI insights for a resume
     Route::post('/resumes/{resumeId}/ai-insights', [AiInsightController::class, 'generate']);
     Route::get('/resumes/{resumeId}/ai-insights',  [AiInsightController::class, 'show']);
+
+    // Email templates and sending
+    Route::get('/candidates/mail-template', [CandidateMailController::class, 'template']);
+    Route::post('/candidates/send-mail',    [CandidateMailController::class, 'send']);
+    Route::post('/candidates/mail/send-bulk', [CandidateMailController::class, 'sendBulk']);
+    Route::get('/candidates/mail/bulk-preview', [CandidateMailController::class, 'bulkPreview']);
 });
