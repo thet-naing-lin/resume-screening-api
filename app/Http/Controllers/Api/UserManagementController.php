@@ -32,6 +32,35 @@ class UserManagementController extends Controller
         ]);
     }
 
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:users,email',
+            'password' => 'required|string|min:8',
+            'role'     => 'required|in:admin,hr',
+        ]);
+
+        $user = User::create([
+            'name'     => $request->name,
+            'email'    => $request->email,
+            'password' => bcrypt($request->password),
+            'email_verified_at' => now(),
+        ]);
+
+        $user->assignRole($request->role);
+
+        AuditLogger::log('user.created', $user, [
+            'created_by' => auth()->user()->name,
+            'role'       => $request->role,
+        ]);
+
+        return response()->json([
+            'message' => 'User created successfully.',
+            'user'    => array_merge($user->toArray(), ['role' => $request->role]),
+        ], 201);
+    }
+
     // PATCH /api/admin/users/{user}/role
     public function assignRole(Request $request, User $user)
     {

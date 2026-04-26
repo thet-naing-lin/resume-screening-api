@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Notifications\ResetPasswordNotification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -18,6 +19,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'google_id',
+        'avatar',
     ];
 
     protected $hidden = [
@@ -54,4 +57,10 @@ class User extends Authenticatable
     //
     // public function roles() { ... }   → Spatie provides this via HasRoles
     // public function hasRole() { ... } → Spatie provides this via HasRoles
+
+    // “When this user needs a password reset email, use my custom notification class.”
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new ResetPasswordNotification($token));
+    }
 }
