@@ -14,10 +14,21 @@ class ResumeController extends Controller
 {
     public function index()
     {
-        $resumes = Resume::with(['candidate', 'jobDescription', 'score', 'uploader'])
-            ->where('uploaded_by', auth()->id())
-            ->latest()
-            ->get();
+        // Only known privileged roles see all resumes
+        $fullAccessRoles = ['admin', 'super_admin']; // add new privileged roles here
+
+        $resumes = Resume::with(['candidate', 'jobDescription', 'score', 'uploader'])->latest();
+
+        // HR sees only their own uploads, Admin sees everything
+        // if (auth()->user()->hasRole('hr')) {
+        //     $resumes = $resumes->where('uploaded_by', auth()->id());
+        // }
+
+        if (!auth()->user()->hasAnyRole($fullAccessRoles)) {
+            $resumes = $resumes->where('uploaded_by', auth()->id());
+        }
+
+        $resumes = $resumes->get()->values();
 
         return response()->json(['data' => $resumes]);
     }

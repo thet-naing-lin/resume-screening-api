@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\AiInsightController;
 use App\Http\Controllers\Api\AuditLogController;
 use App\Http\Controllers\Api\CandidateMailController;
 use App\Http\Controllers\Api\DashboardController;
+use Illuminate\Support\Facades\Request;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,8 +19,10 @@ use App\Http\Controllers\Api\DashboardController;
 */
 
 Route::prefix('auth')->group(function () {
-    Route::post('/register', [AuthController::class, 'register']);
+    // Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login',    [AuthController::class, 'login']);
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('/reset-password',  [AuthController::class, 'resetPassword']);
 });
 
 /*
@@ -28,12 +31,19 @@ Route::prefix('auth')->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth:sanctum')->group(function () {
+
+    // Default Laravel "who am I?" route
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
+
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/auth/me',      [AuthController::class, 'me']);
 
     // Admin-only routes
     Route::middleware('role:admin')->prefix('admin')->group(function () {
         Route::get('/users',                  [UserManagementController::class, 'index']);
+        Route::post('/users',                 [UserManagementController::class, 'store']);
         Route::patch('/users/{user}/role',    [UserManagementController::class, 'assignRole']);
         Route::delete('/users/{user}',        [UserManagementController::class, 'destroy']);
 

@@ -34,6 +34,13 @@ class CandidateRankingController extends Controller
             ->join('scores', 'resumes.id', '=', 'scores.resume_id')
             ->select('resumes.*');
 
+        // Only known privileged roles see all resumes
+        $fullAccessRoles = ['admin', 'super_admin']; // add new privileged roles here
+
+        if (!auth()->user()->hasAnyRole($fullAccessRoles)) {
+            $query->where('uploaded_by', auth()->id());
+        }
+
         // ── US-015: Filter by minimum score ─────────────────
         if ($request->filled('min_score')) {
             $query->where('scores.final_score', '>=', $request->min_score);
@@ -119,6 +126,13 @@ class CandidateRankingController extends Controller
             ->join('scores', 'resumes.id', '=', 'scores.resume_id')
             ->select('resumes.*')
             ->orderByDesc('scores.final_score');
+
+        // Only known privileged roles see all resumes
+        $fullAccessRoles = ['admin', 'super_admin']; // add new privileged roles here
+
+        if (!auth()->user()->hasAnyRole($fullAccessRoles)) {
+            $query->where('uploaded_by', auth()->id());
+        }
 
         if ($request->filled('status')) {
             $query->where('scores.status', $request->status);

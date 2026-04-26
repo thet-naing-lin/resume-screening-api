@@ -21,6 +21,11 @@ class AiInsightController extends Controller
     {
         $resume = Resume::with(['jobDescription', 'score'])->findOrFail($resumeId);
 
+        // HR can only generate insights for their own resumes
+        if (auth()->user()->hasRole('hr') && $resume->uploaded_by !== auth()->id()) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+
         if (!$resume->jobDescription) {
             return response()->json(['message' => 'Job description not found.'], 422);
         }
@@ -65,6 +70,13 @@ class AiInsightController extends Controller
      */
     public function show(int $resumeId)
     {
+        $resume = Resume::findOrFail($resumeId);
+
+        // HR can only view insights for their own resumes
+        if (auth()->user()->hasRole('hr') && $resume->uploaded_by !== auth()->id()) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+
         $score = Score::where('resume_id', $resumeId)
             ->select('ai_summary', 'questions_json')
             ->first();

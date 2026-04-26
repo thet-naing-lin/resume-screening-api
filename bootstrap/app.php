@@ -12,6 +12,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+
+        // Apply CORS to web routes too (needed for Google OAuth callback)
+        // means: “for all routes in the `web` group, also run the `HandleCors` middleware.”
+        $middleware->web(append: [
+            \Illuminate\Http\Middleware\HandleCors::class,
+        ]);
+
         // Register Spatie role/permission middleware aliases
         $middleware->alias([
             'role'       => \Spatie\Permission\Middleware\RoleMiddleware::class,
