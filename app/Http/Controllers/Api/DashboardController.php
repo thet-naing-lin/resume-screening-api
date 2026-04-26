@@ -13,31 +13,46 @@ class DashboardController extends Controller
 {
     public function stats()
     {
-        $userId = auth()->id();
+        $user         = auth()->user();
+        $userId       = $user->id;
+        $isFullAccess = $user->hasAnyRole(['admin', 'super_admin']);
 
+        // ── Active Jobs ───────────────────────────────────────
+        // Admin and HR see all active jobs
         $activeJobs = JobDescription::where('status', 'active')->count();
 
-        $totalResumes = Resume::where('uploaded_by', $userId)->count();
+        // ── Total Resumes ─────────────────────────────────────
+        $totalResumes = $isFullAccess
+            ? Resume::count()
+            : Resume::where('uploaded_by', $userId)->count();
 
-        $candidatesScreened = Resume::where('uploaded_by', $userId)
+        // ── Candidates Screened ───────────────────────────────
+        $candidatesScreened = $isFullAccess
+            ? Resume::where('status', 'scored')->count()
+            : Resume::where('uploaded_by', $userId)
             ->where('status', 'scored')
             ->count();
 
-        $avgScore = Score::whereHas('resume', function ($q) use ($userId) {
-            $q->where('uploaded_by', $userId);
-        })
-            ->avg('final_score');
+        // ── Avg Score ─────────────────────────────────────────
+        $avgScoreQuery = Score::whereHas('resume', function ($q) use ($userId, $isFullAccess) {
+            if (!$isFullAccess) {
+                $q->where('uploaded_by', $userId);
+            }
+        });
+        $avgScore = $avgScoreQuery->avg('final_score');
 
-        // Last 5 audit log entries for this user
-        $recentActivity = AuditLog::where('user_id', $userId)
-            ->orderByDesc('created_at')
-            ->limit(5)
-            ->get()
-            ->map(fn($log) => [
-                'action'     => $log->action,
-                'metadata'   => $log->metadata,
-                'created_at' => $log->created_at->diffForHumans(),
-            ]);
+        // ── Recent Activity ───────────────────────────────────
+        // Admin sees all users' activity, HR sees only their own
+        $activityQuery = AuditLog::orderByDesc('created_at')->limit(5);
+        if (!$isFullAccess) {
+            $activityQuery->where('user_id', $userId);
+        }
+
+        $recentActivity = $activityQuery->get()->map(fn($log) => [
+            'action'     => $log->action,
+            'metadata'   => $log->metadata,
+            'created_at' => $log->created_at->diffForHumans(),
+        ]);
 
         return response()->json([
             'active_jobs'         => $activeJobs,
