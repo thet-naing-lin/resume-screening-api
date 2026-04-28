@@ -149,6 +149,9 @@ HR Team
             ->when($request->filled('job_description_id'), function ($q) use ($request) {
                 $q->where('job_description_id', $request->job_description_id);
             })
+            ->when(!auth()->user()->hasAnyRole(['admin', 'super_admin']), function ($q) {
+                $q->where('uploaded_by', auth()->id()); // HR scope
+            })
             ->get();
 
         if ($resumes->isEmpty()) {
@@ -236,6 +239,9 @@ HR Team
                 if ($request->filled('job_description_id')) {
                     $q->where('job_description_id', $request->job_description_id);
                 }
+            })
+            ->when(!auth()->user()->hasAnyRole(['admin', 'super_admin']), function ($q) {
+                $q->where('uploaded_by', auth()->id()); // HR scope
             })
             ->get();
 
