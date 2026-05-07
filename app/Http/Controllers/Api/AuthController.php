@@ -125,7 +125,14 @@ class AuthController extends Controller
         ]);
 
         // Delete only the current token being used
-        $request->user()->currentAccessToken()->delete();
+        // $request->user()->currentAccessToken()->delete();
+
+        $token = $request->user()->currentAccessToken();
+
+        // TransientToken (used in tests) doesn't have delete()
+        if (method_exists($token, 'delete')) {
+            $token->delete();
+        }
 
         return response()->json([
             'message' => 'Logged out successfully.',

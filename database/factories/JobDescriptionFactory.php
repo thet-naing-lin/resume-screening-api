@@ -12,57 +12,24 @@ class JobDescriptionFactory extends Factory
 
     public function definition(): array
     {
-        // Random experience level and years that make sense together
-        $experienceLevel = $this->faker->randomElement(['junior', 'mid', 'senior']);
-        $experienceYears = match ($experienceLevel) {
-            'junior' => $this->faker->numberBetween(0, 2),
-            'mid'    => $this->faker->numberBetween(2, 5),
-            'senior' => $this->faker->numberBetween(5, 10),
-        };
-
-        // Some sample skills to pick from
-        $skillsPool = [
-            'PHP',
-            'Laravel',
-            'MySQL',
-            'REST API',
-            'Docker',
-            'Git',
-            'Unit Testing',
-            'Redis',
-            'JavaScript',
-            'React',
+        $titles = [
+            'Full Stack Developer',
+            'Backend Engineer',
+            'Frontend Developer',
+            'Data Analyst',
+            'DevOps Engineer',
+            'UI/UX Designer',
+            'Product Manager',
+            'HR Specialist',
         ];
 
-        // Pick 3–6 random skills
-        $requiredSkills = $this->faker->randomElements($skillsPool, $this->faker->numberBetween(3, 6));
-
         return [
-            'user_id'               => User::factory(), // creator
-            'title'                 => $this->faker->jobTitle(),
-            'description'           => $this->faker->paragraphs(3, true),
-            'required_skills'       => $requiredSkills, // will be JSON via cast
-            'required_qualification' => $this->faker->randomElement([
-                'Bachelor’s degree in Computer Science or related field',
-                'Diploma in Software Engineering or equivalent experience',
-                'Relevant IT certification with strong practical experience',
-            ]),
-            'experience_level'      => $experienceLevel, // junior / mid / senior
-            'experience_years'      => $experienceYears,
-            'employment_type'       => $this->faker->randomElement([
-                'full-time',
-                'part-time',
-                'contract',
-                'internship',
-                'freelance',
-            ]),
-            'location'              => $this->faker->randomElement([
-                'Yangon, Myanmar',
-                'Mandalay, Myanmar',
-                'Remote',
-                'Singapore',
-            ]),
-            'status'                => $this->faker->randomElement(['active', 'closed']),
+            'title'            => fake()->jobTitle(),
+            'description'      => fake()->paragraphs(3, true),
+            'user_id'          => User::factory(),  // ← change created_by to user_id
+            'required_skills'  => 'PHP, Laravel, React',
+            'experience_level' => fake()->randomElement(['junior', 'mid', 'senior']),
+            'employment_type'  => fake()->randomElement(['full-time', 'part-time', 'contract']),
         ];
     }
 }
